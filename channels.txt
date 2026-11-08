@@ -1,0 +1,21 @@
+# One per line:  @handle | topics (comma separated, optional)
+# Edit freely. A handle that can't be resolved is skipped with a warning.
+@AndrejKarpathy | Karpathy, AI & ML, LLMs
+@3blue1brown | Math for ML, AI & ML
+@statquest | AI & ML
+@YannicKilcher | AI & ML
+@DeepLearningAI | AI & ML
+@stanfordonline | AI & ML
+@mitocw | DSA
+@CS50 | Programming
+@Computerphile | Programming
+@mCoding | Python
+@ArjanCodes | Python, Software design & craft
+@coreyms | Python
+@sentdex | Python, AI & ML
+@NeetCode | DSA
+@PyData | Python
+@JonGjengset | Systems & performance
+@tsoding | Programming
+@CodeAesthetic | Software design & craft
+@freecodecamp | Programming

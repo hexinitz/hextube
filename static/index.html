@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HexTube</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F6; --paper:#FFFFFF; --ink:#15202B; --muted:#5B6875; --line:#D9DFE5;
+  --accent:#2142C9; --accent-ink:#FFFFFF; --done:#3F7D5B; --mark:#F5D547;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif; --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0F141A; --paper:#161D25; --ink:#E6EBF0; --muted:#93A1AF; --line:#27323D;
+  --accent:#8EA6FF; --accent-ink:#0F141A; --done:#7FC49E; --mark:#C9A92A; color-scheme:dark;}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:9rem}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+
+/* masthead */
+header.mast{padding:28px 0 18px}
+.brand{font:600 1.1rem/1 var(--serif);letter-spacing:-.01em;margin-bottom:14px}
+.mast h1{margin:0;font:600 clamp(2rem,5.5vw,3.5rem)/1.05 var(--serif);letter-spacing:-.02em}
+.mast h1 span{background:linear-gradient(transparent 62%,var(--mark) 62%,var(--mark) 92%,transparent 92%);padding:0 .15em;margin:0 -.15em}
+.progress{margin-top:14px;height:4px;background:var(--line);border-radius:2px;overflow:hidden;max-width:420px}
+.progress i{display:block;height:100%;background:var(--done);width:0;transition:width .4s}
+.progress-note{margin-top:6px;font-size:13px;color:var(--muted)}
+
+/* controls */
+.controls{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0 12px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.row+.row{margin-top:10px}
+.tabs{display:flex;gap:2px;background:var(--line);padding:2px;border-radius:8px}
+.tabs button{border:0;background:transparent;padding:6px 14px;border-radius:6px;color:var(--muted);font-weight:500}
+.tabs button[aria-pressed=true]{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.search{margin-left:auto;flex:0 1 240px;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 10px;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:3px 11px;font-size:13.5px}
+.chip small{color:var(--muted);margin-left:5px}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed=true] small{color:inherit;opacity:.7}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper)}
+.seg button{border:0;background:transparent;padding:5px 11px;font-size:13.5px;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.lab{font-size:13px;color:var(--muted)}
+.check{display:flex;gap:6px;align-items:center;font-size:13.5px;cursor:pointer}
+.ghost{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:5px 12px;font-size:13.5px}
+.notice{margin:14px 0 0;padding:10px 14px;border-left:3px solid var(--mark);background:var(--paper);font-size:14px;color:var(--muted)}
+.notice b{color:var(--ink);font-weight:600}
+
+/* list */
+main{padding:6px 0 60px}
+.talk{display:grid;grid-template-columns:260px 1fr auto;gap:8px 22px;padding:22px 0;border-bottom:1px solid var(--line)}
+.thumb{position:relative;display:block;aspect-ratio:16/9;background:var(--line);border-radius:6px;overflow:hidden;border:0;padding:0}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .dur{position:absolute;right:6px;bottom:6px;background:rgba(10,14,18,.85);color:#fff;font-size:12px;padding:1px 6px;border-radius:4px;font-variant-numeric:tabular-nums}
+.thumb .play{position:absolute;inset:0;display:grid;place-items:center;opacity:0;background:rgba(10,14,18,.35);transition:opacity .15s}
+.thumb:hover .play,.thumb:focus-visible .play{opacity:1}
+.thumb .play svg{width:44px;height:44px;fill:#fff}
+.body h2{margin:0;font:600 1.3rem/1.25 var(--serif);letter-spacing:-.01em}
+.body h2 button{all:unset;cursor:pointer}
+.body h2 button:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.body h2 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.meta{display:flex;flex-wrap:wrap;gap:2px 16px;margin-top:5px;font-size:13.5px;color:var(--muted)}
+.meta .who{color:var(--ink);font-weight:500}
+.sum{margin:8px 0 0;max-width:68ch;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hn{margin:10px 0 0;padding-left:12px;border-left:2px solid var(--accent);font:italic 400 15px/1.45 var(--serif);max-width:62ch}
+.hn a{white-space:nowrap;font:400 12.5px var(--sans);font-style:normal;color:var(--muted);margin-left:6px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tag.found{border-color:var(--accent);color:var(--accent)}
+.tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px}
+.acts{display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:132px}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:7px 12px;text-align:center;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.done{border-color:var(--done);color:var(--done)}
+.talk.watched .thumb img{opacity:.45}
+.talk.watched h2{color:var(--muted)}
+.empty{padding:60px 0;text-align:center;color:var(--muted)}
+.empty p{margin:0 0 14px}
+.more{display:block;margin:26px auto 0}
+
+/* player */
+dialog{width:min(960px,94vw);border:0;border-radius:10px;padding:0;background:var(--paper);color:var(--ink)}
+dialog::backdrop{background:rgba(5,8,12,.72)}
+.frame{aspect-ratio:16/9;background:#000}
+.frame iframe{width:100%;height:100%;border:0;display:block}
+.dlg-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px}
+.dlg-foot strong{flex:1 1 280px;font:600 1.05rem/1.3 var(--serif)}
+footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:12.5px;color:var(--muted)}
+footer a{color:inherit}
+
+@media (max-width:760px){
+  .talk{grid-template-columns:1fr}
+  .acts{flex-direction:row;flex-wrap:wrap}
+  .acts .btn{flex:1}
+  .search{margin-left:0;flex-basis:100%}
+  html{scroll-padding-top:12rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="brand">HexTube</div>
+    <h1 id="date"><span></span></h1>
+    <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+    <div class="progress-note" id="pnote"></div>
+  </header>
+</div>
+<div class="controls">
+  <div class="wrap">
+    <div class="row">
+      <div class="tabs" role="group" aria-label="View" id="tabs"></div>
+      <input class="search" id="q" type="search" placeholder="Search title, channel, topic" aria-label="Search talks">
+    </div>
+    <div class="row"><div class="chips" id="chips" role="group" aria-label="Topic"></div></div>
+    <div class="row">
+      <div class="seg" id="src" role="group" aria-label="Source" hidden></div>
+      <label class="check"><input type="checkbox" id="hide"> Hide watched</label>
+      <button class="ghost" id="shuffle" title="Draw a different set of picks for today">Reshuffle today</button>
+    </div>
+  </div>
+</div>
+<div class="wrap">
+  <div class="notice" id="notice" hidden></div>
+  <main id="list" aria-live="polite"></main>
+  <footer>
+    Talk picks come from <a href="https://hackertube.org">HackerTube</a> and the
+    <a href="https://huggingface.co/datasets/open-index/hacker-news">open-index/hacker-news</a> archive (ODC-By).
+    YouTube channel videos are discovered from public channel feeds. Video titles and channel names belong to their creators.
+    Not affiliated with YouTube, Google, Hacker News or Y Combinator.
+  </footer>
+</div>
+
+<dialog id="player" aria-label="Video player">
+  <div class="frame" id="frame"></div>
+  <div class="dlg-foot">
+    <strong id="ptitle"></strong>
+    <button class="btn" id="pwatch"></button>
+    <a class="btn" id="pyt" target="_blank" rel="noopener">Open on YouTube</a>
+    <button class="btn" id="pclose">Close</button>
+  </div>
+</dialog>
+
+<script>
+const MIX_SIZE = 10, PAGE = 40;
+const TOPICS = ['All','Python','DSA','AI & ML','LLMs','Karpathy','Math for ML','Languages & compilers','Systems & performance','Software design & craft','Web','Databases & distributed','Math & theory'];
+const VIEWS = [['today',"Today's mix"],['all','All talks'],['watched','Watched']];
+
+const S = {videos:[], watched:{}, view:'today', topic:'All', source:'all', hide:false, q:'', shown:PAGE, current:null};
+const $ = s => document.querySelector(s);
+
+function h(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k.startsWith('aria-')) e.setAttribute(k, String(v));
+    else if (v === true) e.setAttribute(k, '');
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const fmtViews = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(n);
+const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
+const startOfToday = () => { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); };
+
+/* seeded randomness: same day + same filters = same picks */
+function hashStr(s){ let x = 2166136261; for (let i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; }
+function rng(seed){ let a = seed; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function drawMix(pool, n, seedStr){
+  const r = rng(hashStr(seedStr)), items = pool.map(v => ({v, w: Math.pow(v.score + 1, 0.7)}));
+  const topicSeen = {}, chanSeen = {}, out = [];
+  while (out.length < n && items.length){
+    const ws = items.map(it => it.w * Math.pow(0.55, topicSeen[it.v.topics[0]] || 0) * Math.pow(0.2, chanSeen[it.v.channel] || 0));
+    let x = r() * ws.reduce((a, b) => a + b, 0), i = 0;
+    while (i < ws.length - 1 && (x -= ws[i]) > 0) i++;
+    const [{v}] = items.splice(i, 1);
+    out.push(v); topicSeen[v.topics[0]] = (topicSeen[v.topics[0]] || 0) + 1; chanSeen[v.channel] = (chanSeen[v.channel] || 0) + 1;
+  }
+  return out;
+}
+
+/* data */
+async function load(){
+  const [v, w] = await Promise.all([
+    fetch('/api/videos').then(r => r.json()),
+    fetch('/api/watched').then(r => r.json()).catch(() => null)]);
+  S.videos = v.videos; S.total = v.total_curated;
+  S.watched = w ?? lsGet('watched', {});
+  const p = lsGet('prefs', {}); Object.assign(S, {view:p.view ?? 'today', topic:p.topic ?? 'All', source:p.source ?? 'all', hide:!!p.hide});
+  S.hasExtra = S.videos.some(x => x.source === 'youtube'); if (!S.hasExtra) S.source = 'all';
+  S.byId = Object.fromEntries(S.videos.map(x => [x.vid, x]));
+  $('#hide').checked = S.hide; render();
+}
+async function setWatched(vid, on){
+  if (on) S.watched[vid] = S.watched[vid] || Date.now(); else delete S.watched[vid];
+  lsSet('watched', S.watched); render(); syncPlayer();
+  try { await fetch('/api/watched', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({vid, watched:on})}); } catch {}
+}
+const savePrefs = () => lsSet('prefs', {view:S.view, topic:S.topic, source:S.source, hide:S.hide});
+
+/* filtering */
+function matches(v){
+  if (S.source === 'hn' && v.source === 'youtube') return false;
+  if (S.source === 'yt' && v.source !== 'youtube') return false;
+  if (S.topic !== 'All' && !v.topics.includes(S.topic)) return false;
+  return true;
+}
+function visible(){
+  const lib = S.videos;
+  if (S.view === 'watched') return lib.filter(v => S.watched[v.vid] && matches(v)).sort((a, b) => S.watched[b.vid] - S.watched[a.vid]);
+  if (S.view === 'all'){
+    const q = S.q.trim().toLowerCase();
+    let r = lib.filter(matches);
+    if (q) r = r.filter(v => (v.title + ' ' + v.channel + ' ' + v.topics.join(' ') + ' ' + v.summary).toLowerCase().includes(q));
+    if (S.hide) r = r.filter(v => !S.watched[v.vid]);
+    return r.sort((a, b) => b.score - a.score);
+  }
+  const cut = startOfToday();                                   // watched on earlier days drop out; today's stay put
+  const pool = lib.filter(v => matches(v) && !(S.watched[v.vid] && S.watched[v.vid] < cut));
+  const bump = lsGet('reshuffle', {})[todayKey()] || 0;
+  let r = drawMix(pool, MIX_SIZE, [todayKey(), bump, S.topic].join('|'));
+  if (S.hide) r = r.filter(v => !S.watched[v.vid]);
+  return r;
+}
+
+/* rendering */
+function talk(v){
+  const w = !!S.watched[v.vid];
+  const open = () => openPlayer(v);
+  return h('article', {class: 'talk' + (w ? ' watched' : '')},
+    h('button', {class:'thumb', onclick:open, 'aria-label':'Play ' + v.title},
+      h('img', {src:`https://i.ytimg.com/vi/${v.vid}/hqdefault.jpg`, alt:'', loading:'lazy', onerror:e => e.target.style.visibility = 'hidden'}),
+      h('span', {class:'play'}, svgPlay())),
+    h('div', {class:'body'},
+      h('h2', {}, h('button', {onclick:open}, v.title)),
+      h('div', {class:'meta'},
+        h('span', {class:'who'}, v.channel),
+        v.source === 'youtube'
+          ? [h('span', {}, `${fmtViews(v.views)} views`), h('span', {}, `Uploaded ${v.years[0]}`)]
+          : [h('span', {}, v.type), h('span', {}, `${v.recs} on HN recommend it`),
+             v.years[0] === v.years[1] ? h('span', {}, `HN ${v.years[0]}`) : h('span', {}, `HN ${v.years[0]} to ${v.years[1]}`)]),
+      h('p', {class:'sum'}, v.summary),
+      v.quote && h('blockquote', {class:'hn', style:'margin-left:0;margin-right:0'}, '\u201C' + v.quote + '\u201D',
+        v.quote_url && h('a', {href:v.quote_url, target:'_blank', rel:'noopener'}, 'HN comment')),
+      h('div', {class:'tags'}, v.source === 'youtube' && h('span', {class:'tag found'}, 'YouTube find'), v.topics.map(t => h('span', {class:'tag'}, t)))),
+    h('div', {class:'acts'},
+      h('button', {class:'btn primary', onclick:open}, 'Watch'),
+      h('button', {class:'btn' + (w ? ' done' : ''), 'aria-pressed':w, onclick:() => setWatched(v.vid, !w)}, w ? 'Watched' : 'Mark watched'),
+      h('a', {class:'btn', href:'https://www.youtube.com/watch?v=' + v.vid, target:'_blank', rel:'noopener'}, 'YouTube')));
+}
+function svgPlay(){ const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24');
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', 'M8 5v14l11-7z'); s.append(p); return s; }
+
+function renderControls(){
+  const base = S.videos.filter(v => S.source === 'all' || (S.source === 'hn') === (v.source !== 'youtube'));
+  $('#tabs').replaceChildren(...VIEWS.map(([id, label]) =>
+    h('button', {'aria-pressed':S.view === id, onclick:() => { S.view = id; S.shown = PAGE; savePrefs(); render(); }},
+      label + (id === 'watched' ? ` (${Object.keys(S.watched).filter(k => S.byId[k]).length})` : ''))));
+  $('#chips').replaceChildren(...TOPICS.map(t => {
+    const n = t === 'All' ? base.length : base.filter(v => v.topics.includes(t)).length;
+    return h('button', {class:'chip', 'aria-pressed':S.topic === t, onclick:() => { S.topic = t; S.shown = PAGE; savePrefs(); render(); }}, t, h('small', {}, n));
+  }));
+  const srcBox = $('#src'); srcBox.hidden = !S.hasExtra;
+  srcBox.replaceChildren(...[['all','All sources'],['hn','HN picks'],['yt','YouTube finds']].map(([id, label]) =>
+    h('button', {'aria-pressed':S.source === id, onclick:() => { S.source = id; S.shown = PAGE; savePrefs(); render(); }}, label)));
+  $('#shuffle').hidden = S.view !== 'today';
+  $('#q').hidden = S.view !== 'all';
+  $('.check').hidden = S.view === 'watched';
+}
+function render(){
+  const d = new Date();
+  $('#date span').textContent = d.toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+  const done = S.videos.filter(v => S.watched[v.vid]).length;
+  $('#bar').style.width = (S.videos.length ? done / S.videos.length * 100 : 0) + '%';
+  $('#pnote').textContent = `${done} of ${S.videos.length} watched`;
+  const n = $('#notice');
+  n.hidden = true;
+  renderControls();
+  const list = visible(), box = $('#list');
+  if (!list.length){
+    const msgs = {watched:'Nothing watched yet. Mark a talk as watched and it will show up here.', all:'No talks match. Try a different topic or search.', today:'No talks match these filters. Pick another topic to draw today\u2019s mix.'};
+    box.replaceChildren(h('div', {class:'empty'}, h('p', {}, msgs[S.view]),
+      (S.topic !== 'All' || S.source !== 'all' || S.q) && h('button', {class:'ghost', onclick:() => { S.topic = 'All'; S.source = 'all'; S.q = ''; $('#q').value = ''; savePrefs(); render(); }}, 'Clear filters')));
+    return;
+  }
+  const slice = S.view === 'today' ? list : list.slice(0, S.shown);
+  box.replaceChildren(...slice.map(talk),
+    S.view !== 'today' && list.length > S.shown && h('button', {class:'ghost more', onclick:() => { S.shown += PAGE; render(); }}, `Show more (${list.length - S.shown} left)`));
+}
+
+/* player */
+const dlg = $('#player');
+function openPlayer(v){
+  if (v.embeddable === false) { window.open('https://www.youtube.com/watch?v=' + v.vid, '_blank', 'noopener'); return; }
+  S.current = v;
+  $('#frame').replaceChildren(h('iframe', {src:`https://www.youtube-nocookie.com/embed/${v.vid}?autoplay=1&rel=0`, title:v.title,
+    allow:'autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen:true}));
+  $('#ptitle').textContent = v.title; $('#pyt').href = 'https://www.youtube.com/watch?v=' + v.vid;
+  syncPlayer(); dlg.showModal();
+}
+function syncPlayer(){ const v = S.current; if (!v) return; const w = !!S.watched[v.vid];
+  const b = $('#pwatch'); b.textContent = w ? 'Watched (undo)' : 'Mark watched'; b.className = 'btn' + (w ? ' done' : ''); }
+function closePlayer(){ $('#frame').replaceChildren(); S.current = null; if (dlg.open) dlg.close(); }
+$('#pclose').onclick = closePlayer;
+$('#pwatch').onclick = () => S.current && setWatched(S.current.vid, !S.watched[S.current.vid]);
+dlg.addEventListener('close', () => { $('#frame').replaceChildren(); S.current = null; });
+dlg.addEventListener('click', e => { if (e.target === dlg) closePlayer(); });
+
+$('#hide').onchange = e => { S.hide = e.target.checked; savePrefs(); render(); };
+$('#q').oninput = e => { S.q = e.target.value; S.shown = PAGE; render(); };
+$('#shuffle').onclick = () => { const m = lsGet('reshuffle', {}); m[todayKey()] = (m[todayKey()] || 0) + 1; lsSet('reshuffle', {[todayKey()]:m[todayKey()]}); render(); };
+
+load().catch(() => { $('#list').replaceChildren(h('div', {class:'empty'}, h('p', {}, 'Could not load talks. Start the app with python3 server.py and open http://127.0.0.1:8000.'))); });
+</script>
+</body>
+</html>
